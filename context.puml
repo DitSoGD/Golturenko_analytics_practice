@@ -1,0 +1,27 @@
+@startuml
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+AddElementTag("v1.0", $borderColor="#d73027")
+AddElementTag("v1.1", $fontColor="#ffffff")
+AddElementTag("backup", $fontColor="orange")
+
+AddRelTag("backup", $textColor="orange", $lineColor="orange", $lineStyle = DashedLine())
+AddRelTag("request", $textColor="blue", $lineColor="blue", $lineStyle = SolidLine())
+
+
+Person(user, "Пользователь системы", "Сотрудник нашей компании")
+Container(OurSystem, "Наша система", "Система для управления складом и доставками нашего магазина", $tags="v1.0")
+Container(apiOt, "API", "java", "Взаимодействие Системы с Системами партнеров", $tags="v1.0+v1.1")
+Container(PartnerSystem, "Партнерская система", "angular", "Системы складов и доставок наших партнеров", $tags="v1.0")
+Container(api, "API", "java", "Взаимодействие Системы с БД", $tags="v1.0+v1.1")
+ContainerDb(db, "База данных", "SQL", "БД товаров и заказов")
+
+Rel(user, OurSystem, "Использует", "https")
+Rel_L(OurSystem, api, "Обращение", "https")
+Rel(api, db, "Reads/Writes")
+Rel_R(OurSystem, apiOt, "Обращение к системам партнеров", "https")
+Rel_R(apiOt, PartnerSystem, "Запрос данных о товарах и доставке", "https", $tags="request")
+Rel_L(PartnerSystem, apiOt, "Передача данных о товарах и доставке", "https", $tags="backup")
+
+SHOW_LEGEND()
+@enduml
