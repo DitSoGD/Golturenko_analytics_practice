@@ -9,19 +9,42 @@ AddRelTag("backup", $textColor="orange", $lineColor="orange", $lineStyle = Dashe
 AddRelTag("request", $textColor="blue", $lineColor="blue", $lineStyle = SolidLine())
 
 
-Person(user, "Пользователь системы", "Сотрудник нашей компании")
-Container(OurSystem, "Наша система", "Система для управления складом и доставками нашего магазина", $tags="v1.0")
-Container(apiOt, "API", "java", "Взаимодействие Системы с Системами партнеров", $tags="v1.0+v1.1")
-Container(PartnerSystem, "Партнерская система", "angular", "Системы складов и доставок наших партнеров", $tags="v1.0")
-Container(api, "API", "java", "Взаимодействие Системы с БД", $tags="v1.0+v1.1")
-ContainerDb(db, "База данных", "SQL", "БД товаров и заказов")
+System_Boundary("OuterSystem", "Система автоматизации магазина стройматериалов") {
 
-Rel(user, OurSystem, "Использует", "https")
-Rel_L(OurSystem, api, "Обращение", "https")
-Rel(api, db, "Reads/Writes")
-Rel_R(OurSystem, apiOt, "Обращение к системам партнеров", "https")
-Rel_R(apiOt, PartnerSystem, "Запрос данных о товарах и доставке", "https", $tags="request")
-Rel_L(PartnerSystem, apiOt, "Передача данных о товарах и доставке", "https", $tags="backup")
+
+    System_Boundary("Products", "Домен товаров") {
+        Container(catalog, "Система учета товара", "Управление записями о товарах")
+        Container(productSearch, "Система поиска товара", "Поиск местоположения товара на складе и актуализация информации об этом")
+        Rel(productSearch, catalog, "Запрашивает данные о товаре")
+    }
+
+    System_Boundary("Documents", "Домен документооборота") {
+        Container(docgenerating, "Система формирования документации", "Формирует документацию о товарах в печатном формате")
+        Container(docvalidation, "Система проверки документации", "Осуществляет проверку документации соответствию правилам")
+    }
+
+    System_Boundary("Finances", "Домен управления денежным оборотом") {
+        Container(accounting, "Система учета операций", "Ведет учет закупок и продаж товаров")
+    }
+
+    System_Boundary("Delivery", "Домен доставки") {
+        Container(deliverySys, "Система управления доставкой", "Формирует поручение на доставку")
+    }
+
+    System_Boundary("Users", "Домен пользовательского управления") {
+        Container(Admin, "Система пользовательского управления", "Управляет учетными записями")
+    }
+
+    System_Boundary("Orders", "Домен заказов") {
+        Container(OrdersSys, "Система управления заказами", "Обрабатывает заявки на заказ")
+    }
+  
+
+    System_Boundary("Partners", "Домен внешних взаимодействий") {
+        Container(communication, "Система партнерских сделок", "Запрашивает информацию со складов партнеров и формирует поручение на партнерскую доставку")
+    }
+
+}
 
 SHOW_LEGEND()
 @enduml
