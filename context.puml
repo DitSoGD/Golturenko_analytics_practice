@@ -15,7 +15,6 @@ System_Boundary("OuterSystem", "Система автоматизации маг
     System_Boundary("Products", "Домен товаров") {
         Container(catalog, "Система учета товара", "Управление записями о товарах")
         Container(productSearch, "Система поиска товара", "Поиск местоположения товара на складе и актуализация информации об этом")
-        Rel(productSearch, catalog, "Запрашивает данные о товаре")
     }
 
     System_Boundary("Documents", "Домен документооборота") {
