@@ -1,35 +1,104 @@
 @startuml
 !include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
 
-AddElementTag("v1.0", $borderColor="#061038", $fontColor="#ffffff")
+AddElementTag("v1.0", $borderColor="#d73027")
 AddElementTag("v1.1", $fontColor="#ffffff")
 AddElementTag("backup", $fontColor="orange")
 
 AddRelTag("backup", $textColor="orange", $lineColor="orange", $lineStyle = DashedLine())
 AddRelTag("request", $textColor="blue", $lineColor="blue", $lineStyle = SolidLine())
 
-Person(User, "Пользователь", "Сотрудник нашей компании", $tags="v1.0")
+Person(User, "Пользователь", "")
+Container(PartnerSystem, "Внешняя система партнера")
 
-System_Boundary(s1, "Система нашей компании"){
+System_Boundary("OuterSystem", "Система автоматизации магазина стройматериалов") {
 
-Container(MicroServ, "Микросервис авторизации/аутенфикации", $tags="v1.0")
-Container(MicroServ1, "Микросервис приемки товара", "Формирует акты приема и вносит записи в БД", $tags="v1.0")
-Container(MicroServ2, "Микросервис проверки сертификатов", "Проверяет наличие документов на товар и соответствие их требованиям", $tags="v1.0")
-Container(MicroServ3, "Микросервис формирования pdf документов", "Формирует pdf документы и позволяет выгружать их на локальный диск", $tags="v1.0")
-Container(MicroServ4, "Микросервис отслеживания", "Отслеживает местонахождение товара на складе (номер стеллажа) и актуализирует информацию о местонахождении товара", $tags="v1.0")
-Container(MicroServ5, "Микросервис генерации штрихкодов", "Генерирует штрихкоды", $tags="v1.0")
-Container(MicroServ6, "Микросервис запроса и получения информации у партнеров", "Запрашивает информацию о наличии товара на складе партнера и приема информации о поступлении/ликвидации товара на складе поставщика", $tags="v1.0")
-Container(MicroServ7, "Микросервис доставки", "формирует и обрабатывает заявки на доставку", $tags="v1.0")
-Container(MicroServ8, "Микросервис формирования документов на доставку", "Формирует необходимые документы", $tags="v1.0")
-Container(MicroServ9, "Микросервис отгрузки", "Формирование форм для отгрузки товаров и изменение/удаление записей в БД", $tags="v1.0")
-ContainerDb(db, "База данных", "SQL", "БД товаров и заказов")
+    Container(APIGateway, "APIGateway", "API управления ")
 
-Rel(MicroServ4, db, "Read/Write", "Сверяет информацию", $tags="")
-Rel(MicroServ5, db, "Read/Write", "Присваивает товару код", $tags="")
+    System_Boundary("Users", "Домен пользовательского управления") {
+        Container(Admin, "Микросервис авторизации/аутенфикации", "Проверяет и предоставляет доступ к системе")
+        ContainerDb(UsersDb, "База данных пользователей")
+        Rel_D(Admin, UsersDb, "Read/Write", "Ищет пользователей в БД и устанавливает их права")
+    }
+    System_Boundary("Products", "Домен товаров") {
+        Container(catalog, "Микросервис управления журналом товаров", "Управление записями о товарах")
+        Container(productSearch, "Микросервис поиска по складу", "Поиск местоположения товара на складе и актуализация информации об этом")
+        Rel(productSearch, catalog, "Запрашивает данные о товаре")
+        ContainerDb(ProductionDB, "БД товаров на складе")
+        Rel(catalog, ProductionDB, "Read/Write", "Запрос информации по товарам в наличии на складе. Актуализация данных о товарах")
+        Container(barcodeserv, "Микросервис генерации штрих-кодов", "Генерирует штрих-коды для товаров")
+        Rel(productSearch, barcodeserv, "Запрос на генерацию штрих-кода")
+        ContainerDb(docshard1, "Шард БД Документов", "Документация по товарам")
+        Rel(catalog, docshard1, "Read", "Получение данных о товарах")
+    }
+
+    System_Boundary("Documents", "Домен документооборота") {
+        Container(docgenerating, "Микросервис генерации pdf документов", "Формирует документацию о товарах в печатном формате")
+        Container(docvalidation, "Микросервис обработки документации", "Осуществляет проверку документации соответствию правилам")
+        ContainerDb(docDb, "БД Документов")
+        Rel(docgenerating, docDb, "Read", "Забирает данные для генерации докуменнта в печатном виде")
+        Rel(docvalidation, docDb, "Read", "Проверка записи на соответствие правилам")
+        Rel(docvalidation, docgenerating, "Запрос на формирование печатного документа")
+    }
+
+    System_Boundary("Finances", "Домен управления сделками") {
+        Container(accounting, "Микросервис финансовых операций", "Ведет учет закупок и продаж товаров")
+        ContainerDb(accountingDb, "БД закупок и продаж", "")
+        Rel(accounting, accountingDb, "Read/Write", "Фиксирует операции в БД")
+        ContainerDb(docshard2, "Шард БД Документов", "Сведения о закупленных товарах")
+        Rel(accounting, docshard2, "Read", "Получение информации о реализуемых товарах")
+    }
+
+    System_Boundary("Delivery", "Домен доставки") {
+        Container(deliverySys, "Микросервис генерации поручений", "Формирует поручение на доставку")
+        ContainerDb(deliveryDb, "БД заявок на доставку", "Хранит записи о текущих доставках")
+        Rel(deliverySys, deliveryDb, "Read/Write", "Фиксирует новые заявки в БД, обновляет статус заявок и удаляет неактуальные заявки")
+        ContainerDb(docshard3, "Шард БД Документов", "Документация по товарам")
+        Rel(deliverySys, docshard3, "Read", "Получение сведений по отправляемому товару")
+    }
+
+    System_Boundary("Orders", "Домен заказов") {
+        Container(OrdersSys, "Микросервис управления заказами", "Создает, удаляет и изменяет заявки на заказ")
+        ContainerDb(OrdersDb, "БД заказов", "Ведение журнала заказов")
+        Rel(OrdersSys, OrdersDb, "Read/Write", "Создает запись о заявке, актуализирует данные записи о заявке, удаляет неактуальные заявки")
+        ContainerDb(docshard4, "Шард БД Документов", "Документация по товарам")
+        Rel(OrdersSys, docshard4, "Read", "Получение данных о товаре")
+    }
+  
+
+    System_Boundary("Partners", "Домен внешних взаимодействий") {
+        Container(communication, "Микросервис взаимодействия с внешними системами", "Запрашивает информацию со складов партнеров и формирует поручение на партнерскую доставку")
+        ContainerDb(communicationDb, "БД записей ответов внешних систем. Шард 1", "shard1", "Записи о наличии товара на складе партнера")
+        ContainerDb(communicationDb1, "БД записей ответов внешних систем. Шард 2", "shard2", "Записи о партнерских доставках")
+        Rel(communication, communicationDb, "Read/Write")
+        Rel(communication, communicationDb1, "Read/Write")
+    }
+
+    Container(APIGateway2, "APIGateway", "API взаимодействия с системами партнеров")
+    Container(cash, "Reddis", "КЭШ")
 }
 
-System_Boundary(s2, "Система компании-партнера"){
-}
+Rel_L(APIGateway, cash, "кэширование запросов")
+
+Rel_D(docvalidation, docshard1, "Read/Write", "Актуализация данных")
+Rel_D(docvalidation, docshard2, "Read/Write", "Актуализация данных")
+Rel_D(docvalidation, docshard3, "Read/Write", "Актуализация данных")
+Rel_D(docvalidation, docshard4, "Read/Write", "Актуализация данных")
+
+Rel(docvalidation, communicationDb, "Read/Write")
+
+Rel_D(User, APIGateway, "Взаимодействие с системой")
+Rel_D(APIGateway, Admin, "Авторизация")
+Rel_D(APIGateway, deliverySys, "")
+Rel_D(APIGateway, OrdersSys, "")
+Rel_D(APIGateway, accounting, "")
+Rel_D(APIGateway, docvalidation, "")
+Rel_D(APIGateway, productSearch, "")
+
+Rel_D(PartnerSystem, APIGateway2, "")
+Rel_D(APIGateway2, communication, "")
+
+
 
 SHOW_LEGEND()
 @enduml
