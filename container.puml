@@ -8,7 +8,7 @@ AddElementTag("backup", $fontColor="orange")
 AddRelTag("backup", $textColor="orange", $lineColor="orange", $lineStyle = DashedLine())
 AddRelTag("request", $textColor="blue", $lineColor="blue", $lineStyle = SolidLine())
 
-Person(User, "Пользователь", "")
+Person(User, "Front", "")
 Container(PartnerSystem, "Внешняя система партнера")
 
 System_Boundary("OuterSystem", "Система автоматизации магазина стройматериалов") {
@@ -22,14 +22,13 @@ System_Boundary("OuterSystem", "Система автоматизации маг
     }
     System_Boundary("Products", "Домен товаров") {
         Container(catalog, "Микросервис управления журналом товаров", "Управление записями о товарах")
-        Container(productSearch, "Микросервис поиска по складу", "Поиск местоположения товара на складе и актуализация информации об этом")
+        Container(productSearch, "Микросервис навигации по складу", "Поиск местоположения товара на складе и актуализация информации об этом")
         Rel(productSearch, catalog, "Запрашивает данные о товаре")
         ContainerDb(ProductionDB, "БД товаров на складе")
         Rel(catalog, ProductionDB, "Read/Write", "Запрос информации по товарам в наличии на складе. Актуализация данных о товарах")
         Container(barcodeserv, "Микросервис генерации штрих-кодов", "Генерирует штрих-коды для товаров")
         Rel(productSearch, barcodeserv, "Запрос на генерацию штрих-кода")
-        ContainerDb(docshard1, "Шард БД Документов", "Документация по товарам")
-        Rel(catalog, docshard1, "Read", "Получение данных о товарах")
+        Rel(productSearch, ProductionDB, "")
     }
 
     System_Boundary("Documents", "Домен документооборота") {
@@ -45,24 +44,18 @@ System_Boundary("OuterSystem", "Система автоматизации маг
         Container(accounting, "Микросервис финансовых операций", "Ведет учет закупок и продаж товаров")
         ContainerDb(accountingDb, "БД закупок и продаж", "")
         Rel(accounting, accountingDb, "Read/Write", "Фиксирует операции в БД")
-        ContainerDb(docshard2, "Шард БД Документов", "Сведения о закупленных товарах")
-        Rel(accounting, docshard2, "Read", "Получение информации о реализуемых товарах")
     }
 
     System_Boundary("Delivery", "Домен доставки") {
-        Container(deliverySys, "Микросервис генерации поручений", "Формирует поручение на доставку")
+        Container(deliverySys, "Микросервис управления доставками", "Формирует поручение на доставку")
         ContainerDb(deliveryDb, "БД заявок на доставку", "Хранит записи о текущих доставках")
         Rel(deliverySys, deliveryDb, "Read/Write", "Фиксирует новые заявки в БД, обновляет статус заявок и удаляет неактуальные заявки")
-        ContainerDb(docshard3, "Шард БД Документов", "Документация по товарам")
-        Rel(deliverySys, docshard3, "Read", "Получение сведений по отправляемому товару")
     }
 
     System_Boundary("Orders", "Домен заказов") {
         Container(OrdersSys, "Микросервис управления заказами", "Создает, удаляет и изменяет заявки на заказ")
         ContainerDb(OrdersDb, "БД заказов", "Ведение журнала заказов")
         Rel(OrdersSys, OrdersDb, "Read/Write", "Создает запись о заявке, актуализирует данные записи о заявке, удаляет неактуальные заявки")
-        ContainerDb(docshard4, "Шард БД Документов", "Документация по товарам")
-        Rel(OrdersSys, docshard4, "Read", "Получение данных о товаре")
     }
   
 
@@ -74,29 +67,21 @@ System_Boundary("OuterSystem", "Система автоматизации маг
         Rel(communication, communicationDb1, "Read/Write")
     }
 
-    Container(APIGateway2, "APIGateway", "API взаимодействия с системами партнеров")
     Container(cash, "Reddis", "КЭШ")
 }
 
 Rel_L(APIGateway, cash, "кэширование запросов")
 
-Rel_D(docvalidation, docshard1, "Read/Write", "Актуализация данных")
-Rel_D(docvalidation, docshard2, "Read/Write", "Актуализация данных")
-Rel_D(docvalidation, docshard3, "Read/Write", "Актуализация данных")
-Rel_D(docvalidation, docshard4, "Read/Write", "Актуализация данных")
-
-Rel(docvalidation, communicationDb, "Read/Write")
+Rel(accounting, docvalidation, "")
+Rel(productSearch, docvalidation, "")
+Rel(OrdersSys, productSearch, "Запрос проверки наличия товара")
+Rel(OrdersSys, communication, "Запрос проверки наличия товара")
 
 Rel_D(User, APIGateway, "Взаимодействие с системой")
 Rel_D(APIGateway, Admin, "Авторизация")
-Rel_D(APIGateway, deliverySys, "")
-Rel_D(APIGateway, OrdersSys, "")
-Rel_D(APIGateway, accounting, "")
-Rel_D(APIGateway, docvalidation, "")
-Rel_D(APIGateway, productSearch, "")
 
-Rel_D(PartnerSystem, APIGateway2, "")
-Rel_D(APIGateway2, communication, "")
+
+Rel_U(communication, PartnerSystem, "")
 
 
 
