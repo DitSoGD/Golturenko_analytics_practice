@@ -3,6 +3,8 @@ entity Product {
   * id*
   * Product_name
   * creation_date
+  * changed_date
+  * storage_id*
   * amount
   category
   
@@ -23,28 +25,27 @@ entity Order {
   * number
   * creation_date
   * status
-  * author
-  * client
+  * client_id*
   * cost
 }
-entity OurStorage {
+entity OrderProduct {
+  * order_id*
+  * product_id*
+}
+entity Storage {
   * id*
   * name
   * adress
-  
+  * own  
 }
 entity Delivery {
-  * id*
+  * id
   * creation_date
   * delivery_service
-  * order_number
+  * order_id*
   * adress
-  * storage_name
+  * storage_id*
   * cost
-}
-entity PartnerStorage {
-  * name*
-  * adress
 }
 entity EmployeeOrders {
   * employee_id*
@@ -53,12 +54,11 @@ entity EmployeeOrders {
 
 User_client ||--o{ Order
 Order ||--|| Delivery
-Order ||--|{ Product
-Product }|--|| OurStorage
-Product }|--|| PartnerStorage
+Order }|--|| OrderProduct
+Product }|--o| OrderProduct
+Product }|--|| Storage
 EmployeeOrders }o--|| User_employee
 EmployeeOrders }|--|| Order
-Delivery }o--|| OurStorage
-Delivery }o--|| PartnerStorage
+Delivery }o--|| Storage
 
 @enduml
