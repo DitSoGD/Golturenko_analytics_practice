@@ -70,8 +70,8 @@ System_Boundary("OuterSystem", "Система автоматизации маг
 
     }
 
+    Container(Rabbit, "RabbitMQ", "Очереди сообщений")
     Container(Kafka, "Kafka", "Топики для сообщений между микросервисами")
-    Container(Rabbit, "RabbitMQ", "")
 }
 
 Rel_U(OrdersSys, Kafka, "Оправка сообщения о созданном заказе")
@@ -80,16 +80,17 @@ Rel_U(accounting, Kafka, "Проверяет есть ли новые опера
 Rel_U(OrdersSys, Rabbit, "Сообщение о новом заказе на доставку")
 Rel_D(Rabbit, deliverySys, "Сообщение о новом заказе")
 
-Rel(accounting, docvalidation, "")
-Rel(productSearch, docvalidation, "")
+Rel(accounting, docvalidation, "Внесение изменений в отчетность")
+Rel(productSearch, docvalidation, "Запрос сведений о товаре из документации")
 Rel(OrdersSys, productSearch, "Запрос проверки наличия товара")
 Rel(OrdersSys, communication, "Запрос проверки наличия товара")
 
+Rel_D(APIGateway, OrdersSys, "Создание и изменение заказа")
 Rel_D(User, APIGateway, "Взаимодействие с системой")
 Rel_D(APIGateway, Admin, "Авторизация")
 
 
-Rel_U(communication, PartnerSystem, "")
+Rel_U(communication, PartnerSystem, "Запрос данных о наличии товара на складе партнера")
 
 
 
