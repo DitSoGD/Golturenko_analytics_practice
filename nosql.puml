@@ -1,54 +1,52 @@
 @startuml
 
 entity User_employee {
-  int **id**
-  Enum **Status**
-  String **FIO**
+  + int **id**
+  + Enum **Status**
+  + String **FIO**
 }
 entity User_client {
-  int **id**
-  String **FIO**
-  String **Adress**
-  Object **Status**
+  + int **id**
+  + String **FIO**
+  + String **Adress**
+  + Object **Order**
 }
 entity Order {
-  int **id**
-  int **number**
-  dateTime **creation_date**
-  Object **status**
-  int **client_id**
-  Decimal **cost**
+  + int **id**
+  + int **number**
+  + dateTime **creation_date**
+  + Decimal **cost**
+  + Object **status**
+  + Object **Employee**
+  + Object **Product**
 }
 entity Delivery {
-  int **id**
-  dateTime **creation_date**
-  Object **delivery_service**
-  int **order_id**
-  String **adress**
-  int **storage_id**
-  Object **storage_name**
-  Decimal **cost**
+  + int **id**
+  + dateTime **creation_date**
+  + Enum **delivery_service**
+  + String **adress**
+  + Decimal **cost**
+  + Array **Order**
 }
 entity Product {
-  int **id**
-  String **Product_name**
-  DateTime **creation_date**
-  DateTime **changed_date**
-  int **storage_id**
-  int **amount**
-  Object **category**
+  + int **id**
+  + DateTime **creation_date**
+  + DateTime **changed_date**
+  + String **Product_name**
+  + int **amount**
+  + Enum **category**
+  + Object **Storage**
 }
 entity Storage {
-  int **id**
-  Char **name**
-  String **adress**
-  Object **own**
+  + int **id**
+  + Char **name**
+  + String **adress**
 }
 
-User_client ||--o{ Order
-Order |o--|{ Product
-Order ||--|| Delivery
-Order |o--|| User_employee
-Product <--> Storage
+User_client *-- Order
+Order *-- Product
+Order <-- Delivery : Ссылается
+Order *-- User_employee
+Product *-- Storage
 
 @enduml
