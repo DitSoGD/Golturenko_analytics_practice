@@ -21,11 +21,8 @@ System_Boundary("OuterSystem", "Система автоматизации маг
         Rel_D(Admin, UsersDb, "Read/Write", "Ищет пользователей в БД и устанавливает их права")
     }
     System_Boundary("Products", "Домен товаров") {
-        Container(catalog, "Микросервис управления журналом товаров", "Управление записями о товарах")
         Container(productSearch, "Микросервис поиска товара по складу", "Поиск местоположения товара на складе и актуализация информации об этом")
-        Rel_D(productSearch, catalog, "Запрос на актуализацию данных в БД")
         ContainerDb(ProductionDB, "БД товаров на складе")
-        Rel_D(catalog, ProductionDB, "Read/Write", "Запрос информации по товарам в наличии на складе. Актуализация данных о товарах")
         Container(barcodeserv, "Микросервис генерации штрих-кодов", "Генерирует штрих-коды для товаров")
         Rel(productSearch, barcodeserv, "Запрос на генерацию штрих-кода")
         Rel_D(productSearch, ProductionDB, "Read/Write", "Поиск записи о товаре в БД. Актуализация местоположения товара на складе")
@@ -34,12 +31,9 @@ System_Boundary("OuterSystem", "Система автоматизации маг
     }
 
     System_Boundary("Documents", "Домен документооборота") {
-        Container(docgenerating, "Микросервис генерации pdf документов", "Формирует документацию о товарах в печатном формате")
         Container(docvalidation, "Микросервис обработки документации", "Осуществляет проверку документации соответствию правилам")
         ContainerDb(docDb, "БД Документов")
-        Rel(docgenerating, docDb, "Read", "Забирает данные для генерации докуменнта в печатном виде")
         Rel(docvalidation, docDb, "Read", "Проверка записи на соответствие правилам")
-        Rel(docvalidation, docgenerating, "Запрос на формирование печатного документа")
     }
 
     System_Boundary("Finances", "Домен управления сделками") {
@@ -52,8 +46,6 @@ System_Boundary("OuterSystem", "Система автоматизации маг
         Container(deliverySys, "Микросервис управления доставками", "Формирует заявки на доставку")
         ContainerDb(deliveryDb, "БД заявок на доставку", "Хранит записи о текущих доставках")
         Rel(deliverySys, deliveryDb, "Read/Write", "Фиксирует новые заявки в БД, обновляет статус заявок и удаляет неактуальные заявки")
-        Container(logistic, "Микросервис логистики", "Отслеживает передвижение товара в процессе доставки")
-        Rel(logistic, deliveryDb, "Read/Write", "Актуализирует информацию о местоположении отправленного товара")
     }
 
     System_Boundary("Orders", "Домен заказов") {
@@ -70,8 +62,8 @@ System_Boundary("OuterSystem", "Система автоматизации маг
 
     }
 
-    Container(Rabbit, "RabbitMQ", "Очереди сообщений")
-    Container(Kafka, "Kafka", "Топики для сообщений между микросервисами")
+    ContainerQueue(Rabbit, "RabbitMQ", "Очереди сообщений")
+    ContainerQueue(Kafka, "Kafka", "Топики для сообщений между микросервисами")
 }
 
 Rel_U(OrdersSys, Kafka, "Оправка сообщения о созданном заказе")
@@ -80,17 +72,19 @@ Rel_U(accounting, Kafka, "Проверяет есть ли новые опера
 Rel_U(OrdersSys, Rabbit, "Сообщение о новом заказе на доставку")
 Rel_D(Rabbit, deliverySys, "Сообщение о новом заказе")
 
-Rel(accounting, docvalidation, "Внесение изменений в отчетность")
-Rel(productSearch, docvalidation, "Запрос сведений о товаре из документации")
 Rel(OrdersSys, productSearch, "Запрос проверки наличия товара")
 Rel(OrdersSys, communication, "Запрос проверки наличия товара")
+
+Rel_U(communication, PartnerSystem, "Запрос данных о наличии товара на складе партнера")
+
+Rel(accounting, docvalidation, "Внесение изменений в отчетность")
+Rel(productSearch, docvalidation, "Запрос сведений о товаре из документации")
 
 Rel_D(APIGateway, OrdersSys, "Создание и изменение заказа")
 Rel_D(User, APIGateway, "Взаимодействие с системой")
 Rel_D(APIGateway, Admin, "Авторизация")
 
 
-Rel_U(communication, PartnerSystem, "Запрос данных о наличии товара на складе партнера")
 
 
 
