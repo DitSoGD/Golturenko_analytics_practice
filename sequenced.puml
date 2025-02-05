@@ -1,0 +1,11 @@
+@startuml
+participant Front
+participant OrderSys
+participant searchProduct
+participant docvalidation
+participant deliverySys
+participant communication
+queue Kafka
+queue Rabbit
+
+@enduml

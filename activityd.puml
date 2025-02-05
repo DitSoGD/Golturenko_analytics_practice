@@ -1,0 +1,32 @@
+@startuml
+start
+
+:response.OrderSys.Orderform;
+:request.searchProduct.Product.amount;
+
+
+
+if     (Product.amount != 0) then (да)
+  :response.searchProduct.Product.amount;
+elseif (request.communication.Product.amount != 0) then (+)
+else (-)
+  :"Товар отсутствует";
+  stop
+endif
+
+:request.docvalidation.ProductSert;
+:response.docvalidation.ProductSert;
+
+:request.DeliverySys.NewDelivery;
+
+if (request.DeliverySys is success) then (no)
+  :"Ошибка";
+  stop
+else (yes)
+  :"Заявка в обработке" ;
+
+:send Message in Kafka.topicOrderPay;
+:request.OrderSys.Message : "Заказ успешно создан";
+
+stop
+@enduml
