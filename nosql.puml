@@ -2,7 +2,7 @@
 
 entity User_employee {
   + int **id**
-  + Enum **Status**
+  + String **Status**
   + String **FIO**
 }
 entity User_client {
@@ -16,14 +16,14 @@ entity Order {
   + int **number**
   + dateTime **creation_date**
   + Decimal **cost**
-  + Object **status**
-  + Object **Employee**
-  + Object **Product**
+  + String **status**
+  + Object **User_employee**
+  + Array **Product**
 }
 entity Delivery {
   + int **id**
   + dateTime **creation_date**
-  + Enum **delivery_service**
+  + String **delivery_service**
   + String **adress**
   + Decimal **cost**
   + Array **Order**
@@ -34,7 +34,7 @@ entity Product {
   + DateTime **changed_date**
   + String **Product_name**
   + int **amount**
-  + Enum **category**
+  + String **category**
   + Object **Storage**
 }
 entity Storage {
@@ -43,10 +43,10 @@ entity Storage {
   + String **adress**
 }
 
-User_client *-- Order
-Order *-- Product
-Order <-- Delivery : Ссылается
-Order *-- User_employee
-Product *-- Storage
+User_client ||--|{ Order
+Order ||--|{ Product
+Order ||--|| Delivery
+Order ||--|| User_employee
+Product }|--|| Storage
 
 @enduml
