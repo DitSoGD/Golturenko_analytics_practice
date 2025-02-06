@@ -3,9 +3,58 @@ participant Front
 participant OrderSys
 participant searchProduct
 participant docvalidation
+queue Rabbit
 participant deliverySys
 participant communication
+participant PartnerSys as "Внешняя система"
 queue Kafka
-queue Rabbit
+
+
+activate Front
+Front -> OrderSys : POST /addOrderform
+activate OrderSys
+OrderSys -> searchProduct : GET /Product_amount
+activate searchProduct
+searchProduct -> searchProduct : Поиск товара в БД
+
+alt Product.amount == 0
+searchProduct -> communication : GET /Product.amount
+activate communication
+communication -> PartnerSys : GET /Product.amount
+activate PartnerSys
+PartnerSys --> communication : Product.amount
+deactivate PartnerSys
+communication --> searchProduct : Product.amount
+deactivate communication
+
+alt PartnerSys.Product.amount == 0
+searchProduct --> OrderSys : Product.amount
+OrderSys --> Front : "Товар отсутствует"
+else Product.amount > 0
+searchProduct --> OrderSys : Product.amount
+end
+
+else Product.amount > 0
+searchProduct --> OrderSys : Product.amount
+deactivate searchProduct
+end
+
+OrderSys -> docvalidation : GET /ProductSert
+docvalidation --> OrderSys : ProductSert
+
+par
+OrderSys -> Rabbit : POST /newDelivery
+activate Rabbit
+Rabbit -> deliverySys : POST /newDelivery
+deactivate Rabbit
+activate deliverySys
+deliverySys --> Front : Доставка оформлена
+deactivate deliverySys
+else
+OrderSys -> Kafka : Сообщение о созданном заказе
+OrderSys --> Front : Оформлена доставка
+deactivate OrderSys
+deactivate Front
+end
 
 @enduml
