@@ -1,14 +1,118 @@
-swagger: '2.0'
+openapi: 3.0.0
 info:
   title: API Title
   version: '1.0'
-host: api.server.test
-basePath: /
-schemes:
-  - https
+servers:
+  - url: https://api.example.com/v1
+  description: сервер1
 paths:
-  /test:
+  /products:
     get:
+      summary: Получение списка товаров
+      description: Получение списка товаров
+      operationId: getcatalog
+      parameters:
+        - name: limit
+          in: query
+          description: Максимальное количество ресурсов в ответе
+          required: false
+          schema:
+            type: integer
+            default: 10
+        - name: offset
+          in: query
+          description: Смещение для пагинации
+          required: false
+          schema:
+            type: integer
+            default: 0
       responses:
         '200':
-          description: OK
+          description: 
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: Уникальный идентификатор ресурса
+                    name:
+                      type: string
+                      description: Название ресурса
+                    description:
+                      type: string
+                      description: Описание ресурса
+                    active:
+                      type: boolean
+                      description: Статус активности ресурса
+        '400':
+          description: 
+        '404':
+          description: 
+        '500':
+          description: 
+  /products/{productId}:
+    get:
+      summary: Получить запись о товаре
+      description: Возвращает данные о запрашиваемом товаре
+      operationId: getResourceById
+  /orderForm:
+    post:
+      summary: Создание нового заказа
+      description: Создание нового заказа
+      operationId: addForm
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                FIO:
+                  type: string
+                  description: ФИО клиента
+                Adress:
+                  type: string
+                  description: Адрес клиента
+                Employee:
+                  type: string
+                  description: 
+                Product_name:
+                  type: string
+                  description: 
+                status:
+                  type: string
+                  description: 
+                Product_category:
+                  type: string
+                  description: 
+              required:
+                - FIO
+                - Adress
+                - Product_name
+                - Employee
+                - status
+      responses:
+        '201':
+          description: Ресурс успешно создан
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: 
+                  creation_date:
+                    type: string
+                    description: 
+                  cost:
+                    type: decimal
+                    description: 
+        '400':
+          description: Некорректные данные запроса
+        '500':
+          description: Внутренняя ошибка сервера
