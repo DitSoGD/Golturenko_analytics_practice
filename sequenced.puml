@@ -13,6 +13,7 @@ queue Kafka
 
 activate Front
 Front -> OrderSys : POST /addOrderform
+deactivate Front
 activate OrderSys
 OrderSys -> searchProduct : GET /Product_amount
 activate searchProduct
@@ -22,21 +23,19 @@ Products --> searchProduct : Найденные записи
 deactivate Products
 
 alt Product.amount == 0
+activate searchProduct
 searchProduct -> communication : GET /Product.amount
+destroy searchProduct
 activate communication
 communication -> PartnerSys : GET /Product.amount
 activate PartnerSys
 PartnerSys --> communication : Product.amount
+alt Product.amount == 0
+destroy communication
+else
 deactivate PartnerSys
-communication --> searchProduct : Product.amount
-deactivate communication
-
-alt PartnerSys.Product.amount == 0
-searchProduct --> OrderSys : Product.amount
-OrderSys --> Front : "Товар отсутствует"
-else Product.amount > 0
-searchProduct --> OrderSys : Product.amount
 end
+
 
 else Product.amount > 0
 searchProduct --> OrderSys : Product.amount
@@ -44,21 +43,27 @@ deactivate searchProduct
 end
 
 OrderSys -> docvalidation : GET /ProductSert
+deactivate OrderSys
+activate docvalidation
 docvalidation --> OrderSys : ProductSert
+deactivate docvalidation
+activate OrderSys
 
 par
 OrderSys -> Rabbit : POST /newDelivery
+deactivate OrderSys
 activate Rabbit
 Rabbit -> deliverySys : POST /newDelivery
 deactivate Rabbit
 activate deliverySys
-deliverySys --> Front : Доставка оформлена
-deactivate deliverySys
 else
 OrderSys -> Kafka : Сообщение о созданном заказе
+end
+
+deliverySys --> OrderSys : Оформлена доставка
+deactivate deliverySys
+activate OrderSys
 OrderSys --> Front : Оформлена доставка
 deactivate OrderSys
-deactivate Front
-end
 
 @enduml
