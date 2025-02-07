@@ -4,10 +4,12 @@ info:
   version: '1.0'
 servers:
   - url: https://api.example.com/v1
-  description: сервер1
+    description: сервер1
 paths:
   /products:
     get:
+      tags:
+        - Product
       summary: Получение списка товаров
       description: Получение списка товаров
       operationId: getcatalog
@@ -28,7 +30,7 @@ paths:
             default: 0
       responses:
         '200':
-          description: 
+          description: успешно
           content:
             application/json:
               schema:
@@ -49,70 +51,239 @@ paths:
                       type: boolean
                       description: Статус активности ресурса
         '400':
-          description: 
+          description: Некорректный запрос
         '404':
-          description: 
+          description: Не найдено
         '500':
-          description: 
-  /products/{productId}:
-    get:
-      summary: Получить запись о товаре
-      description: Возвращает данные о запрашиваемом товаре
-      operationId: getResourceById
-  /orderForm:
+          description: Ошибка сервера
     post:
+      tags:
+        - Product
       summary: Создание нового заказа
       description: Создание нового заказа
       operationId: addForm
       requestBody:
-        required: true
+        description: Создание нового заказа
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                FIO:
-                  type: string
-                  description: ФИО клиента
-                Adress:
-                  type: string
-                  description: Адрес клиента
-                Employee:
-                  type: string
-                  description: 
-                Product_name:
-                  type: string
-                  description: 
-                status:
-                  type: string
-                  description: 
-                Product_category:
-                  type: string
-                  description: 
-              required:
-                - FIO
-                - Adress
-                - Product_name
-                - Employee
-                - status
+              $ref: '#/components/schemas/Order'
+        required: true
+      responses:
+        '200':
+          description: Успешно
+        '400':
+          description: Некорректный запрос
+        '500':
+          description: Ошибка сервера
+  /products/{productId}:
+    get:
+      tags:
+        - Product
+      summary: Получить запись о товаре
+      description: Возвращает данные о запрашиваемом товаре
+      operationId: getResourceById
+      parameters:
+        - name: ProductId
+          in: path
+          description: ID Product to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Успешно
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '400':
+          description: Некорректный запрос
+        '404':
+          description: Не найдено
+        '500':
+          description: Ошибка сервера        
+  /orders/add:
+    post:
+      tags:
+        - Order
+      summary: Создание нового заказа
+      description: Создание нового заказа
+      operationId: addForm
+      requestBody:
+        description: Создание заказа
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+        required: true
       responses:
         '201':
           description: Ресурс успешно создан
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                    description: 
-                  creation_date:
-                    type: string
-                    description: 
-                  cost:
-                    type: decimal
-                    description: 
+                $ref: '#/components/schemas/Order'
         '400':
           description: Некорректные данные запроса
         '500':
           description: Внутренняя ошибка сервера
+    put:
+      tags:
+        - Order
+      summary: Обновление существующего заказа
+      description: Обновление существующего заказа
+      operationId: updateform
+      requestBody:
+        description: Обновление существующего заказа
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+        required: true
+      responses:
+        '200':
+          description: Успешно
+        '400':
+          description: Ошибка запроса
+        '500':
+          description: Ошибка сервера
+  /orders/{orderId}:
+    post:
+      tags:
+        - Order
+      summary: Внесение изменений в заказ
+      description: Внесение изменений в заказ
+      operationId: updateform
+      requestBody:
+        description: Внесение изменений в существующий заказ
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Order'
+        required: true
+      responses:
+        '200':
+          description: Внесение изменений в заказ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Order'
+        '400':
+          description: Некоррректный запрос
+        '404':
+          description: Заказ не найден
+        '500':
+          description: Ошибка сервера
+components:
+  schemas:
+    Storage:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1000000
+        name:
+          type: string
+          example: StorageName
+        adress:
+          type: string
+          example: Storage adress
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1000000
+        Product_name:
+          type: string
+          example: Product name
+        creation_date:
+          type: string
+          format: DD-MM-YYYY 00:00:00
+          example: 01-01-1970 00:00:00
+        changed_date:
+          type: string
+          format: DD-MM-YYYY 00:00:00
+          example: 01-01-1970 00:00:00
+        amount:
+          type: integer
+          format: int64
+          example: 100
+        category:
+          type: string
+          example: category1
+        Storage:
+          $ref: '#/components/schemas/Storage'
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: float
+          example: 1000000
+        number:
+          type: string
+          example: A100000
+        cost:
+          type: number
+          format: int64
+          example: 100
+        status:
+          type: string
+          description: Статус заказа
+          enum:
+            - Создан
+            - В обработке
+            - Ожидается оплата
+            - Принят
+            - Оформление доставки
+            - Доставка в процессе
+            - Завершен
+            - Отклонен
+        employee:
+          $ref: '#/components/schemas/User_Employee'
+        client:
+          $ref: "#/components/schemas/User_Client"
+        Product:
+          type: array
+          items:
+            $ref: '#components/schemas/Product'
+    User_Employee:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: float
+          example: 1000000
+        status:
+          type: string
+          description: Должность
+          enum:
+            - Продавец
+            - Менеджер
+            - Кладовщик
+            - Управляющий
+            - работник склада
+            - Ответственный за доставку
+        FIO:
+          type: string
+          example: Иванов Иван Иванович
+    User_Client:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: float
+          example: 1000000
+        FIO:
+          type: string
+          example: Иванов Иван Иванович
+        Adress:
+          type: string
+          example: г. Москва, ул. Ленина д.5, к-1, кв.10
+
+
