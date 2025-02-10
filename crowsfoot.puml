@@ -1,0 +1,64 @@
+@startuml
+entity Product {
+  * id*
+  * Product_name
+  * creation_date
+  * changed_date
+  * storage_id*
+  * amount
+  category
+  
+}
+entity User_employee {
+  * id*
+  * status
+  * FIO
+}
+entity User_client {
+  * id*
+  * fio
+  * adress
+  * status
+}
+entity Order {
+  * id*
+  * number
+  * creation_date
+  * status
+  * client_id*
+  * cost
+}
+entity OrderProduct {
+  * order_id*
+  * product_id*
+}
+entity Storage {
+  * id*
+  * name
+  * adress
+  * own  
+}
+entity Delivery {
+  * id
+  * creation_date
+  * delivery_service
+  * order_id*
+  * adress
+  * storage_id*
+  * cost
+}
+entity EmployeeOrders {
+  * employee_id*
+  * order_id*
+}
+
+User_client ||--o{ Order
+Order ||--|| Delivery
+Order }|--|| OrderProduct
+Product }|--o| OrderProduct
+Product }|--|| Storage
+EmployeeOrders }o--|| User_employee
+EmployeeOrders }|--|| Order
+Delivery }o--|| Storage
+
+@enduml

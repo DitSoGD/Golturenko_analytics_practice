@@ -1,0 +1,52 @@
+@startuml
+
+entity User_employee {
+  + int **id**
+  + String **Status**
+  + String **FIO**
+}
+entity User_client {
+  + int **id**
+  + String **FIO**
+  + String **Adress**
+  + Object **Order**
+}
+entity Order {
+  + int **id**
+  + int **number**
+  + dateTime **creation_date**
+  + Decimal **cost**
+  + String **status**
+  + Object **User_employee**
+  + Array **Product**
+}
+entity Delivery {
+  + int **id**
+  + dateTime **creation_date**
+  + String **delivery_service**
+  + String **adress**
+  + Decimal **cost**
+  + Array **Order**
+}
+entity Product {
+  + int **id**
+  + DateTime **creation_date**
+  + DateTime **changed_date**
+  + String **Product_name**
+  + int **amount**
+  + String **category**
+  + Object **Storage**
+}
+entity Storage {
+  + int **id**
+  + Char **name**
+  + String **adress**
+}
+
+User_client ||--|{ Order
+Order ||--|{ Product
+Order ||--|| Delivery
+Order ||--|| User_employee
+Product }|--|| Storage
+
+@enduml
