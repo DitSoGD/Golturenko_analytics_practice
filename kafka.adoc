@@ -46,7 +46,40 @@
 *Avro*
 [source, avro]
 ----
-{}
+{
+  "namespace": "avro",
+  "type": "record",
+  "name": "NewOrder",
+  "fields": [
+    {
+      "name": "id",
+      "type": "long"
+    },
+    {
+      "name": "number",
+      "type": "long"
+    },
+    { "name": "creation_date",
+      "type": "date"
+    },
+    { "name": "cost",
+      "type": "decimal"
+    }
+    {
+      "name": "employee",
+      "type": "record",
+      "fields": [
+        {"name": "id", "type": "long"},
+        {"name": "name", "type": "string"},
+        {"name": "position", "type": "string"}
+      ]
+    }
+    {
+      "name": "",
+      "type": ""
+    }
+  ]
+}
 ----
 
 == Топик order.update - обновление информации в существующем заказе, изменение статуса заказа
