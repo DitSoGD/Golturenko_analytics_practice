@@ -75,8 +75,8 @@
       ]
     }
     {
-      "name": "",
-      "type": ""
+      "name": "Product",
+      "type": "array"
     }
   ]
 }
@@ -121,6 +121,50 @@
 }
 ----
 
+*Avro*
+
+[source,avro]
+----
+{
+  "namespace": "avro",
+  "type": "record",
+  "name": "UpdateOrder",
+  "fields": [
+    {
+      "name": "id",
+      "type": "long"
+    },
+    {
+      "name": "number",
+      "type": "long"
+    },
+    { "name": "creation_date",
+      "type": "date"
+    },
+    { "name": "changing_date",
+      "type": "date"
+    },
+    { "name": "cost",
+      "type": "decimal"
+    }
+    {
+      "name": "employee",
+      "type": "record",
+      "fields": [
+        {"name": "id", "type": "long"},
+        {"name": "name", "type": "string"},
+        {"name": "position", "type": "string"}
+      ]
+    }
+    {
+      "name": "Product",
+      "type": "array"
+    }
+  ]
+}
+----
+
+
 == Топик order.deactivate - деактивация записи о заказе, помещение записи в архив
 * *Producer*: OrderSys (микросервис управления заказами)
 * *Consumers*:
@@ -128,25 +172,106 @@
 - enable.idempotents
 - manual.commit
 
+* Примеры сообщений
+
+*JSON*
+
+[source,json]
+----
+
+----
+
+*Avro*
+
+[source,avro]
+----
+
+----
+
+
  
 == Брокер Доставок
 * Название:  delivery.events
 * Для чего: Хранит сообщения о событиях связанных с доставкой (создание новой доставки, изменение статуса, архивация записи о завершенной доставке)
 === Топик delivery.creation
+* *Producer*: deliverySys
+* *Consumers*: OrderSys
+* Колличество партиций
+* Гарантии доставки
+  - а
+
+* Примеры сообщений
+
+*JSON*
+
+[source,json]
+----
+
+----
+
+*Avro*
+
+[source,avro]
+----
+
+----
+
 
 === Топик delivery.update
+* *Producer*: deliverySys
+* *Consumers*: OrderSys
+* Колличество партиций
+* Гарантии доставки
+  - а
 
 === Топик delivery.archivate
+* *Producer*: deliverySys
+* *Consumers*: OrderSys
+* Колличество партиций
+* Гарантии доставки
+  - а
+
 * Примеры сообщений:
 
 *JSON*
+
+[source,json]
+----
+
+----
+
+*Avro*
+
+[source,avro]
+----
+
+----
 
 
 == Брокер Финансовых операций
-* Название:  Accounting
-* Для чего: Хранит сообщения о
+* *Producer*: deliverySys
+* *Consumers*: OrderSys
+* Колличество партиций
+* Гарантии доставки
+  - а
 
 === Топик о новой финансовой операции
+* Примеры сообщений
+
+*JSON*
+
+[source,json]
+----
+
+----
+
+*Avro*
+
+[source,avro]
+----
+
+----
+
 
 === Топик 
 
@@ -154,6 +279,18 @@
 * Примеры сообщений:
 
 *JSON*
+
+[source,json]
+----
+
+----
+
+*Avro*
+
+[source,avro]
+----
+
+----
 
 
 == Брокер Документооборота
@@ -162,4 +299,16 @@
 * Примеры сообщений:
 
 *JSON*
+
+[source,json]
+----
+
+----
+
+*Avro*
+
+[source,avro]
+----
+
+----
 
