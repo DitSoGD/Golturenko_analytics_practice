@@ -115,15 +115,8 @@
 ----
 {
   "key": order.update,
-  "value": "",
-  "timestamp": DD-MM-YYYY 00:00:00,
-  "headers": [{
-    "_id": {
-      "$oid": "exampleId"
-    },
+  "value": {
     "number": "int",
-    "creation_date": DD-MM-YYYY 00:00:00,
-    "changing_date": DD-MM-YYYY 00:00:00,
     "cost": 1.00,
     "Employee": {
       "$oid": "exampleId"
@@ -132,6 +125,14 @@
      "$oid": "exampleId"
     },
     "Product_id": ["123456789", "113456789", "111456789"]
+  },
+  "timestamp": DD-MM-YYYY 00:00:00,
+  "headers": [{
+    "_id": {
+      "$oid": "exampleId"
+    },
+    "creation_date": DD-MM-YYYY 00:00:00,
+    "changing_date": DD-MM-YYYY 00:00:00,
 }]
 }
 ----
@@ -204,12 +205,7 @@
 ----
 {
   "key": order.deactivation,
-  "value": "",
-  "timestamp": DD-MM-YYYY 00:00:00,
-  "headers": [{
-    "_id": {
-      "$oid": "exampleId"
-    },
+  "value": {
     "number": 1233456789,
     "creation_date": DD-MM-YYYY 00:00:00,
     "changing_date": DD-MM-YYYY 00:00:00,
@@ -220,7 +216,13 @@
     "Client": {
      "$oid": "exampleId"
     },
-    "adress": "string",
+    "adress": "string"
+    },
+  "timestamp": DD-MM-YYYY 00:00:00,
+  "headers": [{
+    "_id": {
+      "$oid": "exampleId"
+    }
 }]
 }
 ----
@@ -297,12 +299,7 @@
 ----
 {
   "key": delivery.creation,
-  "value": "",
-  "timestamp": DD-MM-YYYY 00:00:00,
-  "headers": [{
-    "_id": {
-      "$oid": "exampleId"
-    },
+  "value": {
     "number": "int",
     "creation_date": DD-MM-YYYY 00:00:00,
     "changing_date": DD-MM-YYYY 00:00:00,
@@ -316,6 +313,12 @@
     "adress": "string",
     "storage_id": "exampleId",
     "Product_id": ["123456789", "113456789", "111456789"]
+    },
+  "timestamp": DD-MM-YYYY 00:00:00,
+  "headers": [{
+    "_id": {
+      "$oid": "exampleId"
+    }
 }]
 }
 ----
@@ -392,12 +395,7 @@
 ----
 {
   "key": delivery.update,
-  "value": "",
-  "timestamp": DD-MM-YYYY 00:00:00,
-  "headers": [{
-    "_id": {
-      "$oid": "exampleId"
-    },
+  "value": {
     "number": 1233456789,
     "creation_date": DD-MM-YYYY 00:00:00,
     "changing_date": DD-MM-YYYY 00:00:00,
@@ -410,6 +408,12 @@
     },
     "adress": "string",
     "Product_id": ["123456789", "113456789", "111456789"]
+    },
+  "timestamp": DD-MM-YYYY 00:00:00,
+  "headers": [{
+    "_id": {
+      "$oid": "exampleId"
+    }
 }]
 }
 ----
@@ -490,12 +494,7 @@
 ----
 {
   "key": delivery.archivation,
-  "value": "",
-  "timestamp": DD-MM-YYYY 00:00:00,
-  "headers": [{
-    "_id": {
-      "$oid": "exampleId"
-    },
+  "value": {
     "number": "int",
     "creation_date": DD-MM-YYYY 00:00:00,
     "changing_date": DD-MM-YYYY 00:00:00,
@@ -507,6 +506,12 @@
      "$oid": "exampleId"
     },
     "Product_id": ["123456789", "113456789", "111456789"]
+    },
+  "timestamp": DD-MM-YYYY 00:00:00,
+  "headers": [{
+    "_id": {
+      "$oid": "exampleId"
+    }
 }]
 }
 ----
@@ -580,12 +585,7 @@
 ----
 {
   "key": delivery.creation,
-  "value": "",
-  "timestamp": DD-MM-YYYY 00:00:00,
-  "headers": [{
-    "_id": {
-      "$oid": "exampleId"
-    },
+  "value": {
     "creation_date": DD-MM-YYYY 00:00:00,
     "order_id": {
       "$oid": "exampleId"
@@ -596,13 +596,20 @@
     "Client": {
      "$oid": "exampleId"
     },
+    "operation_type": purchase,
     "total": 100.00,
     "Products": [{
       "Product_id": "exampleId",
       "cost": 1.00,
       "amount": 100,
       "storage_id": "exampleId",
-    }],
+    }]
+    },
+  "timestamp": DD-MM-YYYY 00:00:00,
+  "headers": [{
+    "_id": {
+      "$oid": "exampleId"
+    }
   }]
 }
 ----
@@ -611,7 +618,56 @@
 
 [source,avro]
 ----
-
+{
+  "namespace": "avro",
+  "type": "record",
+  "name": "NewOrder",
+  "fields": [
+    {
+      "name": "id",
+      "type": "integer"
+    },
+    {
+      "name": "creation_date",
+      "type": "date"
+    },
+    {
+      "name": "Employee",
+      "type": "record",
+      "fields": [
+        {"name": "user_id", "type": "long"},
+        {"name": "name", "type": "string"},
+        {"name": "position", "type": "string"}
+      ]
+    },
+    {
+      "name": "Client",
+      "type": "record",
+      "fields": [
+        {"name": "id", "type": "long"},
+        {"name": "name", "type": "string"},
+        {"name": "userrank", "type": "string"}
+      ]
+    },
+    {
+      "name": "operation_type",
+      "type": "enum"
+    },
+    {
+      "name": "total",
+      "type": "decimal"
+    },
+    {
+      "name": "Products",
+      "type": "record",
+      "fields":
+        {"name": "Product_id", "type": "string"},
+        {"name": "cost", "type": "decimal"},
+        {"name": "amount", "type": "string"},
+        {"name": "storage_id", "type": "string"}
+    }
+  ]
+}
 ----
 
 
