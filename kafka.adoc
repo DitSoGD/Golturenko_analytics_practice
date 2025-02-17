@@ -11,7 +11,7 @@
 ** productSearch (микросервис поиска товаров по складу)
 ** communication (микросервис внешних взаимодействий)
 * *Гарантии доставки*
-- acks = 1
+- acks = all
 - enable.idempotents = true
 - manual.commit
 * Кол-во партиций - 2
@@ -28,18 +28,19 @@
   "timestamp": DD-MM-YYYY 00:00:00,
   "headers": [{
     "_id": {
-      "$oid": "67a9aed1137279e67df8780f"
+      "$oid": "exampleId"
     },
-    "number": "int",
-    "creation_date": "dateTime",
-    "cost": "Decimal",
+    "number": 1233456789,
+    "creation_date": DD-MM-YYYY 00:00:00,
+    "changing_date": DD-MM-YYYY 00:00:00,
+    "cost": 1.00,
     "Employee": {
-      "$oid": "67a330ca1434847c6979bb30"
+      "$oid": "exampleId"
     },
     "Client": {
-     "$oid": "67a335561434847c6979bb31"
+     "$oid": "exampleId"
     },
-    "Product_id": array
+    "Product_id": ["123456789", "113456789", "111456789"]
 }]
 }
 ----
@@ -62,9 +63,12 @@
     { "name": "creation_date",
       "type": "date"
     },
+    { "name": "changing_date",
+      "type": "date"
+    },
     { "name": "cost",
       "type": "decimal"
-    }
+    },
     {
       "name": "employee",
       "type": "record",
@@ -73,9 +77,18 @@
         {"name": "name", "type": "string"},
         {"name": "position", "type": "string"}
       ]
-    }
+    },
     {
-      "name": "Product",
+      "name": "client",
+      "type": "record",
+      "fields": [
+        {"name": "id", "type": "long"},
+        {"name": "name", "type": "string"},
+        {"name": "userrank", "type": "string"}
+      ]
+    },
+    {
+      "name": "Product_id",
       "type": "array"
     }
   ]
@@ -91,6 +104,7 @@
 * Кол-во партиций 
 * Гарантии доставки
 - acks = all
+- enable.idempotents = false
 - manual.commit
 
 * Примеры сообщений:
@@ -100,23 +114,24 @@
 [source, json]
 ----
 {
-  "key": order.creation,
+  "key": order.update,
   "value": "",
   "timestamp": DD-MM-YYYY 00:00:00,
   "headers": [{
     "_id": {
-      "$oid": "67a9aed1137279e67df8780f"
+      "$oid": "exampleId"
     },
     "number": "int",
-    "creation_date": "dateTime",
-    "cost": "Decimal",
+    "creation_date": DD-MM-YYYY 00:00:00,
+    "changing_date": DD-MM-YYYY 00:00:00,
+    "cost": 1.00,
     "Employee": {
-      "$oid": "67a330ca1434847c6979bb30"
+      "$oid": "exampleId"
     },
     "Client": {
-     "$oid": "67a335561434847c6979bb31"
+     "$oid": "exampleId"
     },
-    "Product_id": array
+    "Product_id": ["123456789", "113456789", "111456789"]
 }]
 }
 ----
@@ -146,7 +161,7 @@
     },
     { "name": "cost",
       "type": "decimal"
-    }
+    },
     {
       "name": "employee",
       "type": "record",
@@ -155,9 +170,18 @@
         {"name": "name", "type": "string"},
         {"name": "position", "type": "string"}
       ]
-    }
+    },
     {
-      "name": "Product",
+      "name": "client",
+      "type": "record",
+      "fields": [
+        {"name": "id", "type": "long"},
+        {"name": "name", "type": "string"},
+        {"name": "userrank", "type": "string"}
+      ]
+    },
+    {
+      "name": "Product_id",
       "type": "array"
     }
   ]
@@ -178,14 +202,79 @@
 
 [source,json]
 ----
-
+{
+  "key": order.deactivation,
+  "value": "",
+  "timestamp": DD-MM-YYYY 00:00:00,
+  "headers": [{
+    "_id": {
+      "$oid": "exampleId"
+    },
+    "number": 1233456789,
+    "creation_date": DD-MM-YYYY 00:00:00,
+    "changing_date": DD-MM-YYYY 00:00:00,
+    "status": deactivate
+    "Employee": {
+      "$oid": "exampleId"
+    },
+    "Client": {
+     "$oid": "exampleId"
+    },
+    "adress": "string",
+}]
+}
 ----
 
 *Avro*
 
 [source,avro]
 ----
-
+{
+  "namespace": "avro",
+  "type": "record",
+  "name": "deactivateOrder",
+  "fields": [
+    {
+      "name": "id",
+      "type": "long"
+    },
+    {
+      "name": "number",
+      "type": "long"
+    },
+    { "name": "creation_date",
+      "type": "date"
+    },
+    { "name": "changing_date",
+      "type": "date"
+    },
+    { "name": "status",
+      "type": "enum"
+    },
+    {
+      "name": "employee",
+      "type": "record",
+      "fields": [
+        {"name": "id", "type": "long"},
+        {"name": "name", "type": "string"},
+        {"name": "position", "type": "string"}
+      ]
+    },
+    {
+      "name": "client",
+      "type": "record",
+      "fields": [
+        {"name": "id", "type": "long"},
+        {"name": "name", "type": "string"},
+        {"name": "userrank", "type": "string"}
+      ]
+    }
+    {
+      "name": "adress",
+      "type": "string"
+    }
+  ]
+}
 ----
 
 
@@ -206,14 +295,85 @@
 
 [source,json]
 ----
-
+{
+  "key": delivery.creation,
+  "value": "",
+  "timestamp": DD-MM-YYYY 00:00:00,
+  "headers": [{
+    "_id": {
+      "$oid": "exampleId"
+    },
+    "number": "int",
+    "creation_date": DD-MM-YYYY 00:00:00,
+    "changing_date": DD-MM-YYYY 00:00:00,
+    "cost": 1.00,
+    "Employee": {
+      "$oid": "exampleId"
+    },
+    "Client": {
+     "$oid": "exampleId"
+    },
+    "adress": "string",
+    "storage_id": "exampleId",
+    "Product_id": ["123456789", "113456789", "111456789"]
+}]
+}
 ----
 
 *Avro*
 
 [source,avro]
 ----
-
+{
+  "namespace": "avro",
+  "type": "record",
+  "name": "NewOrder",
+  "fields": [
+    {
+      "name": "id",
+      "type": "long"
+    },
+    {
+      "name": "number",
+      "type": "long"
+    },
+    { "name": "creation_date",
+      "type": "date"
+    },
+    { "name": "changing_date",
+      "type": "date"
+    },
+    { "name": "cost",
+      "type": "decimal"
+    },
+    {
+      "name": "employee",
+      "type": "record",
+      "fields": [
+        {"name": "id", "type": "long"},
+        {"name": "name", "type": "string"},
+        {"name": "position", "type": "string"}
+      ]
+    },
+    {
+      "name": "client",
+      "type": "record",
+      "fields": [
+        {"name": "id", "type": "long"},
+        {"name": "name", "type": "string"},
+        {"name": "userrank", "type": "string"}
+      ]
+    },
+    {
+      "name": "adress",
+      "type": "string"
+    },
+    {
+      "name": "Product_id",
+      "type": "array"
+    }
+  ]
+}
 ----
 
 
@@ -223,6 +383,97 @@
 * Колличество партиций
 * Гарантии доставки
   - а
+
+* Примеры сообщений:
+
+*JSON*
+
+[source, json]
+----
+{
+  "key": delivery.update,
+  "value": "",
+  "timestamp": DD-MM-YYYY 00:00:00,
+  "headers": [{
+    "_id": {
+      "$oid": "exampleId"
+    },
+    "number": 1233456789,
+    "creation_date": DD-MM-YYYY 00:00:00,
+    "changing_date": DD-MM-YYYY 00:00:00,
+    "order_status": inprocess,
+    "Employee": {
+      "$oid": "exampleId"
+    },
+    "Client": {
+     "$oid": "exampleId"
+    },
+    "adress": "string",
+    "Product_id": ["123456789", "113456789", "111456789"]
+}]
+}
+----
+
+*Avro*
+
+[source,avro]
+----
+{
+  "namespace": "avro",
+  "type": "record",
+  "name": "UpdateDelivery",
+  "fields": [
+    {
+      "name": "id",
+      "type": "long"
+    },
+    {
+      "name": "number",
+      "type": "long"
+    },
+    {
+      "name": "status",
+      "type": "enum"
+    }
+    { "name": "creation_date",
+      "type": "date"
+    },
+    { "name": "changing_date",
+      "type": "date"
+    },
+    { "name": "cost",
+      "type": "decimal"
+    },
+    {
+      "name": "employee",
+      "type": "record",
+      "fields": [
+        {"name": "id", "type": "long"},
+        {"name": "name", "type": "string"},
+        {"name": "position", "type": "string"}
+      ]
+    },
+    {
+      "name": "client",
+      "type": "record",
+      "fields": [
+        {"name": "id", "type": "long"},
+        {"name": "name", "type": "string"},
+        {"name": "userrank", "type": "string"}
+      ]
+    },
+    {
+      "name": "adress",
+      "type": "string"
+    },
+    {
+      "name": "Product",
+      "type": "array"
+    }
+  ]
+}
+----
+
 
 === Топик delivery.archivate
 * *Producer*: deliverySys
@@ -237,14 +488,79 @@
 
 [source,json]
 ----
-
+{
+  "key": delivery.archivation,
+  "value": "",
+  "timestamp": DD-MM-YYYY 00:00:00,
+  "headers": [{
+    "_id": {
+      "$oid": "exampleId"
+    },
+    "number": "int",
+    "creation_date": DD-MM-YYYY 00:00:00,
+    "changing_date": DD-MM-YYYY 00:00:00,
+    "status": archivated,
+    "Employee": {
+      "$oid": "exampleId"
+    },
+    "Client": {
+     "$oid": "exampleId"
+    },
+    "Product_id": ["123456789", "113456789", "111456789"]
+}]
+}
 ----
 
 *Avro*
 
 [source,avro]
 ----
-
+{
+  "namespace": "avro",
+  "type": "record",
+  "name": "delivery.archivation",
+  "fields": [
+    {
+      "name": "id",
+      "type": "long"
+    },
+    {
+      "name": "number",
+      "type": "long"
+    },
+    { "name": "creation_date",
+      "type": "date"
+    },
+    { "name": "changing_date",
+      "type": "date"
+    },
+    { "name": "status",
+      "type": "enum"
+    },
+    {
+      "name": "employee",
+      "type": "record",
+      "fields": [
+        {"name": "id", "type": "long"},
+        {"name": "name", "type": "string"},
+        {"name": "position", "type": "string"}
+      ]
+    },
+    {
+      "name": "client",
+      "type": "record",
+      "fields": [
+        {"name": "id", "type": "long"},
+        {"name": "name", "type": "string"},
+        {"name": "userrank", "type": "string"}
+      ]
+    },
+    {
+      "name": "Product_id",
+      "type": "array"
+    }
+  ]
+}
 ----
 
 
@@ -255,34 +571,40 @@
 * Гарантии доставки
   - а
 
-=== Топик о новой финансовой операции
+=== Топик Новая запись о финансовой операции
 * Примеры сообщений
 
 *JSON*
 
 [source,json]
 ----
-
-----
-
-*Avro*
-
-[source,avro]
-----
-
-----
-
-
-=== Топик 
-
-=== Топик 
-* Примеры сообщений:
-
-*JSON*
-
-[source,json]
-----
-
+{
+  "key": delivery.creation,
+  "value": "",
+  "timestamp": DD-MM-YYYY 00:00:00,
+  "headers": [{
+    "_id": {
+      "$oid": "exampleId"
+    },
+    "creation_date": DD-MM-YYYY 00:00:00,
+    "order_id": {
+      "$oid": "exampleId"
+    },
+    "Employee": {
+      "$oid": "exampleId"
+    },
+    "Client": {
+     "$oid": "exampleId"
+    },
+    "total": 100.00,
+    "Products": [{
+      "Product_id": "exampleId",
+      "cost": 1.00,
+      "amount": 100,
+      "storage_id": "exampleId",
+    }],
+  }]
+}
 ----
 
 *Avro*
@@ -295,7 +617,16 @@
 
 == Брокер Документооборота
 * Название:  documents
-* Для чего: Хранит сообщения о
+* Для чего: Хранит сообщения о запросе документации на товар
+
+=== Топик запроса на документацию о товаре
+* *Producer*: deliverySys
+* *Consumers*:
+** docvalidationSys
+* *Гарантии доставки*
+- acks = 0
+- enable.idempotents = true
+- manual.commit
 * Примеры сообщений:
 
 *JSON*
